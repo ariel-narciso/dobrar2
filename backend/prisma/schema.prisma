@@ -16,24 +16,22 @@ datasource db {
 
 model Stock {
   id     String  @id @default(uuid())
-  ticker String
+  ticker String @unique
   name   String
-  cnpj   String
+  cnpj   String? @unique
+  type String
   Order  Order[]
 
-  @@unique([ticker])
-  @@unique([cnpj])
   @@map("stock")
 }
 
 model Note {
   id                   String   @id @default(uuid())
-  date                 DateTime
+  date                 DateTime @unique
   fees                 Decimal
-  withholding_income_tax Decimal
+  withholding_income_tax Decimal @default(0)
   Order                Order[]
 
-  @@unique([date])
   @@map("note")
 }
 

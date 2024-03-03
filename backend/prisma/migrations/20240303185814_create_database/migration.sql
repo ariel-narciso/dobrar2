@@ -3,7 +3,8 @@ CREATE TABLE "stock" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "ticker" TEXT NOT NULL,
     "name" TEXT NOT NULL,
-    "cnpj" TEXT NOT NULL
+    "cnpj" TEXT,
+    "type" TEXT NOT NULL
 );
 
 -- CreateTable
@@ -11,7 +12,7 @@ CREATE TABLE "note" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "date" DATETIME NOT NULL,
     "fees" DECIMAL NOT NULL,
-    "withholding_income_tax" DECIMAL NOT NULL
+    "withholding_income_tax" DECIMAL NOT NULL DEFAULT 0
 );
 
 -- CreateTable
