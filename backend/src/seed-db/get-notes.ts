@@ -23,7 +23,7 @@ export async function getNotes() {
         console.log(orders)
       }
       notes.push({
-        date: new Date(reader.getDate()),
+        date: new Date(usDateFormat(reader.getDate())),
         orders: orders,
         fees: fees.emoluments + fees.settlementFee + fees.iss,
         withholdingIncomeTax: fees.irrf
@@ -31,4 +31,9 @@ export async function getNotes() {
     }
   }
   return notes
+}
+
+function usDateFormat(date: string) {
+  const [day, year, month] = date.split('/')
+  return `${year}/${day}/${month}`
 }
