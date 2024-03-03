@@ -29,7 +29,7 @@ model Note {
   id                   String   @id @default(uuid())
   date                 DateTime @unique
   fees                 Decimal
-  withholding_income_tax Decimal @default(0)
+  withholdingIncomeTax Decimal @map("withholding_income_tax") @default(0)
   Order                Order[]
 
   @@map("note")
@@ -37,13 +37,13 @@ model Note {
 
 model Order {
   id       String  @id @default(uuid())
-  note_id  String
-  stock_id String
+  noteId  String @map("note_id")
+  stockId String @map("stock_id")
   type     Boolean
   quantity Int
   price    Decimal
-  note     Note    @relation(fields: [note_id], references: [id])
-  stock    Stock   @relation(fields: [stock_id], references: [id])
+  note     Note    @relation(fields: [noteId], references: [id])
+  stock    Stock   @relation(fields: [stockId], references: [id])
 
   @@map("order")
 }
