@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@prisma/client": "^5.10.2",
-    "dotenv": "^16.4.5"
+    "dotenv": "^16.4.5",
+    "pdf.js-extract": "^0.2.1"
   }
 }
