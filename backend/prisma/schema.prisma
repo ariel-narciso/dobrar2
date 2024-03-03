@@ -1,0 +1,43 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Stock {
+  id     String  @id @default(uuid())
+  ticker String
+  name   String
+  cnpj   String
+  Order  Order[]
+
+  @@unique([ticker])
+  @@unique([cnpj])
+}
+
+model Note {
+  id                   String   @id @default(uuid())
+  date                 DateTime
+  fees                 Decimal
+  withholding_income_tax Decimal
+  Order                Order[]
+
+  @@unique([date])
+}
+
+model Order {
+  id       String  @id @default(uuid())
+  note_id  String
+  stock_id String
+  type     Boolean
+  quantity Int
+  price    Decimal
+  note     Note    @relation(fields: [note_id], references: [id])
+  stock    Stock   @relation(fields: [stock_id], references: [id])
+}
