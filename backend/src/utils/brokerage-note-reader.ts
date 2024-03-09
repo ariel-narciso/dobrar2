@@ -88,7 +88,7 @@ export class BrokerageNoteReader {
 
   #orderFilter(order: string[]) {
     let filteredOrder: OrderInterface = {} as OrderInterface
-    filteredOrder['type'] = 'c'
+    filteredOrder['type'] = order[1] as ('c'|'v')
     filteredOrder['ticket'] = order[3].split(' ')[0]
     if (order[2] == 'fracionario') {
       filteredOrder['ticket'] = filteredOrder['ticket'].substring(0, filteredOrder['ticket'].length - 1)

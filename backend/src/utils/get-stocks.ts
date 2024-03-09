@@ -1,12 +1,9 @@
 import { QuoteInterface, StockInterface } from './interfaces/quote'
-import { PrismaClient } from '@prisma/client'
-import 'dotenv/config'
-
-const prisma = new PrismaClient()
+// import 'dotenv/config' // DANDO ERRO
 
 export async function getStocks(type: 'stock' | 'fund'): Promise<StockInterface[]> {
   const params = new URLSearchParams({
-    token: process.env.BRAPI_TOKEN as string,
+    token: 'auhauha' as string,
     type: type
   })
   const url = `https://brapi.dev/api/quote/list?${params}`

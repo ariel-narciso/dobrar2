@@ -1,93 +1,136 @@
 import { PrismaClient } from "@prisma/client";
-import { getStocks } from "../src/seed-db/get-stocks";
-import { getNotes } from "../src/seed-db/get-notes";
-import { OrderInterface } from "../src/seed-db/interfaces/order";
-import { OrderModelInterface } from "../src/seed-db/interfaces/order-model";
+import { getStocks } from "../src/utils/get-stocks";
+import { getNotes } from "../src/utils/get-notes";
+import { OrderInterface } from "../src/utils/interfaces/order";
+import { OrderTypeModel, QuoteTypeModel } from "../src/models/type";
+import { OrderModel } from "../src/models/order";
 
-const prisma = new PrismaClient()
+export class Seed {
 
-async function main() {
+  quoteTypes: Array<QuoteTypeModel> = []
+  orderTypes: Array<OrderTypeModel> = []
+  #prisma = new PrismaClient()
 
-  await prisma.order.deleteMany()
-  await prisma.note.deleteMany()
-  await prisma.stock.deleteMany()
+  async #createQuoteTypes() {
 
-  console.log('... Inserting stocks on the database ...')
-  await stocks()
-
-  console.log('... Inserting notes and orders on the database ...')
-  await notes()
-
-  console.log('... Insertion complete ...')
-}
-
-async function stocks() {
+    const types: Array<QuoteTypeModel> = [
+      {code: 1, name: 'ETF'},
+      {code: 2, name: 'Ação'},
+      {code: 3, name: 'Fundo Imobiliário'}
+    ]
   
-  const stocks = await getStocks('stock')
-  for (const stock of stocks) {
-    await prisma.stock.create({
-      data: {
-        ticker: stock.stock.toLowerCase(),
-        name: stock.name,
-        type: 'stock'
-      }
-    })
+    for (const type of types) {
+      this.quoteTypes.push(await this.#prisma.quoteType.create({
+        data: type
+      }))
+    }
   }
-  const funds = await getStocks('fund')
-  for (const fund of funds) {
-    await prisma.stock.create({
-      data: {
-        ticker: fund.stock.toLowerCase(),
-        name: fund.name,
-        type: fund.stock != 'ivvb11' ? 'fund' : 'etf'
-      }
-    })
+
+  async #createOrderTypes() {
+
+    const types: Array<QuoteTypeModel> = [
+      {code: 1, name: 'Compra'},
+      {code: 2, name: 'Venda'},
+    ]
+  
+    for (const type of types) {
+      this.orderTypes.push(await this.#prisma.orderType.create({
+        data: type
+      }))
+    }
   }
-}
 
-async function notes() {
+  async createQuotes() {
 
-  const notes = await getNotes()
-  for (const note of notes) {
-    await prisma.note.create({
-      data: {
-        date: note.date,
-        fees: note.fees,
-        withholdingIncomeTax: note.withholdingIncomeTax,
-        Order: {
-          create: await getOrdersWithTickerId(note.orders)
+    await this.#prisma.$connect()
+
+    await this.#createQuoteTypes()
+
+    const etfTypeId = this.quoteTypes.find(type => type.code == 1)?.id as string
+    const stockTypeId = this.quoteTypes.find(type => type.code == 2)?.id as string
+    const fiiTypeId = this.quoteTypes.find(type => type.code == 3)?.id as string
+
+    const stocks = await getStocks('stock')
+    for (const stock of stocks) {
+      await this.#prisma.quote.create({
+        data: {
+          ticker: stock.stock.toLowerCase(),
+          name: stock.name,
+          quoteTypeId: stockTypeId
         }
-      }
-    })
+      })
+    }
+    const funds = await getStocks('fund')
+    for (const fund of funds) {
+      await this.#prisma.quote.create({
+        data: {
+          ticker: fund.stock.toLowerCase(),
+          name: fund.name,
+          quoteTypeId: fund.stock != 'ivvb11' ? fiiTypeId : etfTypeId //'fund' : 'etf'
+        }
+      })
+    }
+
+    await this.#prisma.$disconnect()
+  }
+
+  async createNotes() {
+
+    await this.#prisma.$connect()
+
+    await this.#createOrderTypes()
+
+    const notes = await getNotes()
+    for (const note of notes) {
+      await this.#prisma.note.create({
+        data: {
+          date: note.date,
+          fees: note.fees,
+          irrf: note.irrf,
+          Order: {
+            create: await this.#getOrdersWithTickerId(note.orders)
+          }
+        }
+      })
+    }
+
+    await this.#prisma.$disconnect()
+  }
+
+  async #getOrdersWithTickerId(orders: Array<OrderInterface>) {
+
+    const buyOrderId = this.orderTypes.find(type => type.code == 1)?.id as string
+    const sellOrderId = this.orderTypes.find(type => type.code == 2)?.id as string
+    const ans: Array<OrderModel> = []
+    for (const order of orders) {
+      const stock = await this.#prisma.quote.findUnique({
+        where: {
+          ticker: order.ticket
+        }
+      })
+      ans.push({
+        quoteId: stock!.id,
+        orderTypeId: order.type == 'c' ? buyOrderId : sellOrderId,
+        quantity: order.quantity,
+        price: order.price
+      })
+    }
+    return ans
+  }
+
+  async deleteDb() {
+    
+    await this.#prisma.order.deleteMany()
+    await this.#prisma.note.deleteMany()
+    await this.#prisma.quote.deleteMany()
+    await this.#prisma.quoteType.deleteMany()
+    await this.#prisma.orderType.deleteMany()
   }
 }
 
-async function getOrdersWithTickerId(orders: Array<OrderInterface>) {
-  const ans: Array<OrderModelInterface> = []
-  for (const order of orders) {
-    const stock = await prisma.stock.findUnique({
-      where: {
-        ticker: order.ticket
-      }
-    })
-    ans.push({
-      stockId: stock!.id,
-      type: order.type == 'c',
-      quantity: order.quantity,
-      price: order.price
-    })
-  }
-  return ans
-}
-
-console.log('... Connection database started ...')
-main()
-  .then(async () => {
-    await prisma.$disconnect()
-    console.log('... Connection database ended ...')
-  })
-  .catch(async (e) => {
-    console.error(e)
-    await prisma.$disconnect()
-    process.exit(1)
-  })
+const seed = new Seed()
+seed.deleteDb().then(async () => {
+  await seed.createQuotes()
+  await seed.createNotes()
+  console.log('ok')
+})

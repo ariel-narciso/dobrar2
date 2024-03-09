@@ -3,6 +3,6 @@ import { OrderInterface } from "./order"
 export interface NoteInterface {
   date: Date
   fees: number
-  withholdingIncomeTax: number
+  irrf: number
   orders: Array<OrderInterface>
 }
