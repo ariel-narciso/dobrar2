@@ -14,36 +14,56 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Stock {
-  id     String  @id @default(uuid())
-  ticker String @unique
-  name   String
-  cnpj   String? @unique
-  type String
-  Order  Order[]
+model Quote {
+  id          String    @id @default(uuid())
+  quoteTypeId String    @map("quote_type_id")
+  ticker      String    @unique
+  name        String
+  cnpj        String?   @unique
+  quoteType   QuoteType @relation(fields: [quoteTypeId], references: [id])
+  Order       Order[]
 
-  @@map("stock")
+  @@map("quote")
 }
 
 model Note {
-  id                   String   @id @default(uuid())
-  date                 DateTime @unique
-  fees                 Decimal
-  withholdingIncomeTax Decimal @map("withholding_income_tax") @default(0)
-  Order                Order[]
+  id    String   @id @default(uuid())
+  date  DateTime @unique
+  fees  Float
+  irrf  Float    @default(0)
+  Order Order[]
 
   @@map("note")
 }
 
 model Order {
-  id       String  @id @default(uuid())
-  noteId  String @map("note_id")
-  stockId String @map("stock_id")
-  type     Boolean
-  quantity Int
-  price    Decimal
-  note     Note    @relation(fields: [noteId], references: [id])
-  stock    Stock   @relation(fields: [stockId], references: [id])
+  id          String    @id @default(uuid())
+  orderTypeId String    @map("order_type_id")
+  noteId      String    @map("note_id")
+  quoteId     String    @map("quote_id")
+  quantity    Int
+  price       Float
+  orderType   OrderType @relation(fields: [orderTypeId], references: [id])
+  note        Note      @relation(fields: [noteId], references: [id])
+  quote       Quote     @relation(fields: [quoteId], references: [id])
 
   @@map("order")
+}
+
+model OrderType {
+  id    String  @id @default(uuid())
+  code  Int     @unique
+  name  String
+  Order Order[]
+
+  @@map("order_type")
+}
+
+model QuoteType {
+  id    String  @id @default(uuid())
+  code  Int     @unique
+  name  String
+  Quote Quote[]
+
+  @@map("quote_type")
 }
