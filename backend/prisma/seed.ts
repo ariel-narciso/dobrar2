@@ -1,9 +1,10 @@
 import { PrismaClient } from "@prisma/client";
-import { getStocks } from "../src/utils/get-stocks";
-import { getNotes } from "../src/utils/get-notes";
 import { OrderInterface } from "../src/utils/interfaces/order";
-import { OrderTypeModel, QuoteTypeModel } from "../src/models/type";
 import { OrderModel } from "../src/models/order";
+import { StockInterface } from "../src/utils/interfaces/quote";
+import { NoteInterface } from "../src/utils/interfaces/note";
+import { QuoteTypeModel } from "../src/models/quote-type";
+import { OrderTypeModel } from "../src/models/oder-type";
 
 export class Seed {
 
@@ -40,17 +41,12 @@ export class Seed {
     }
   }
 
-  async createQuotes() {
-
-    await this.#prisma.$connect()
-
-    await this.#createQuoteTypes()
+  async #createQuotes(stocks: Array<StockInterface>, funds: Array<StockInterface>) {
 
     const etfTypeId = this.quoteTypes.find(type => type.code == 1)?.id as string
     const stockTypeId = this.quoteTypes.find(type => type.code == 2)?.id as string
     const fiiTypeId = this.quoteTypes.find(type => type.code == 3)?.id as string
 
-    const stocks = await getStocks('stock')
     for (const stock of stocks) {
       await this.#prisma.quote.create({
         data: {
@@ -60,27 +56,19 @@ export class Seed {
         }
       })
     }
-    const funds = await getStocks('fund')
+
     for (const fund of funds) {
       await this.#prisma.quote.create({
         data: {
           ticker: fund.stock.toLowerCase(),
           name: fund.name,
-          quoteTypeId: fund.stock != 'ivvb11' ? fiiTypeId : etfTypeId //'fund' : 'etf'
+          quoteTypeId: fund.stock != 'ivvb11' ? fiiTypeId : etfTypeId
         }
       })
     }
-
-    await this.#prisma.$disconnect()
   }
 
-  async createNotes() {
-
-    await this.#prisma.$connect()
-
-    await this.#createOrderTypes()
-
-    const notes = await getNotes()
+  async #createNotes(notes: Array<NoteInterface>) {
     for (const note of notes) {
       await this.#prisma.note.create({
         data: {
@@ -93,7 +81,24 @@ export class Seed {
         }
       })
     }
+  }
 
+  async resetNotes(notes: Array<NoteInterface>) {
+    await this.#prisma.$connect()
+    await this.#deleteNotes()
+    await this.#prisma.orderType.deleteMany()
+    await this.#createOrderTypes()
+    await this.#createNotes(notes)
+    await this.#prisma.$disconnect()
+  }
+
+  async resetDataBase(stocks: Array<StockInterface>, funds: Array<StockInterface>, notes: Array<NoteInterface>) {
+    await this.#prisma.$connect()
+    await this.#deleteDataBase()
+    await this.#createQuoteTypes()
+    await this.#createQuotes(stocks, funds)
+    await this.#createOrderTypes()
+    await this.#createNotes(notes)
     await this.#prisma.$disconnect()
   }
 
@@ -118,19 +123,15 @@ export class Seed {
     return ans
   }
 
-  async deleteDb() {
-    
+  async #deleteNotes() {
     await this.#prisma.order.deleteMany()
     await this.#prisma.note.deleteMany()
+  }
+
+  async #deleteDataBase() {
+    await this.#deleteNotes()
+    await this.#prisma.orderType.deleteMany()
     await this.#prisma.quote.deleteMany()
     await this.#prisma.quoteType.deleteMany()
-    await this.#prisma.orderType.deleteMany()
   }
 }
-
-const seed = new Seed()
-seed.deleteDb().then(async () => {
-  await seed.createQuotes()
-  await seed.createNotes()
-  console.log('ok')
-})
