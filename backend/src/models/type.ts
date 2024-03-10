@@ -1,7 +1,5 @@
-export type QuoteTypeModel = {
+export type TypeModel = {
   id?: string
   code: number
   name: string
 }
-
-export type OrderTypeModel = QuoteTypeModel
