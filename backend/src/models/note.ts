@@ -1,5 +1,5 @@
 export type NoteModel = {
-  id: string
+  id?: string
   date: Date
   fees: number
   irrf: number

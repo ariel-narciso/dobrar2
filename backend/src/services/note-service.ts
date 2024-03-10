@@ -23,7 +23,9 @@ export class NoteService {
     return note
   }
 
-  static async getNotes() : Promise<Array<NoteModel>> {
-    return await prisma.note.findMany()
+  static async getNotes(sortType?: 'asc' | 'desc'): Promise<Array<NoteModel>> {
+    return await prisma.note.findMany({
+      orderBy: { date: sortType }
+    })
   }
 }
