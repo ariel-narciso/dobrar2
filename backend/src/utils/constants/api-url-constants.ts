@@ -1,0 +1,1 @@
+export const BRAPI_URL = 'https://brapi.dev/api/quote'
