@@ -1,15 +1,23 @@
 import { CostApportionmentOrderModel } from "../../models/transients/cost-apportionment";
-import { QuoteStock, VariableIncomeTabModel } from "../../models/transients/variable-income-tab";
+import { QuoteStockModel, VariableIncomeTabModel } from "../../models/transients/variable-income-tab";
 import { NoteService } from "../note-service";
 import { CostApportionmentService } from "./cost-apportionment-service";
 
 export class VariableIncomeTabService {
 
-  orders: Array<VariableIncomeTabModel> = []
-  quoteStock: QuoteStock = {}
+  #orders: VariableIncomeTabModel[] = []
+  #quoteStock: QuoteStockModel = {}
+
+  get quoteStock() {
+    return { ...this.#quoteStock }
+  }
+
+  get orders() {
+    return structuredClone(this.#orders)
+  }
 
   async get() {
-    this.orders = []
+    this.#orders = []
     const notes = await NoteService.getNotes('asc')
     for (const note of notes) {
       const apportionment = await CostApportionmentService.get(note.id!)
@@ -38,28 +46,36 @@ export class VariableIncomeTabService {
       averagePrice: 0
     }
     this.#setQuantityPriceStock(obj)
-    this.orders.push(obj)
+    this.#orders.push(obj)
   }
 
   #setQuantityPriceStock(obj: VariableIncomeTabModel) {
-    if (!(obj.ticker in this.quoteStock)) {
+    if (!(obj.ticker in this.#quoteStock)) {
       obj.quantityStock = obj.quantity
       obj.averagePrice = obj.priceWithFees
     }
     else {
-      obj.quantityStock = obj.quantity + this.quoteStock[obj.ticker].quantity
+      obj.quantityStock = obj.quantity + this.#quoteStock[obj.ticker].quantity
       if (obj.quantity > 0) {
         obj.averagePrice = (
-          this.quoteStock[obj.ticker].price * this.quoteStock[obj.ticker].quantity + obj.totalWithFees
+          this.#quoteStock[obj.ticker].price * this.#quoteStock[obj.ticker].quantity + obj.totalWithFees
         ) / obj.quantityStock
       }
       else {
-        obj.averagePrice = this.quoteStock[obj.ticker].price
+        obj.averagePrice = this.#quoteStock[obj.ticker].price
       }
     }
-    this.quoteStock[obj.ticker] = {
+    this.#quoteStock[obj.ticker] = {
       quantity: obj.quantityStock,
       price: obj.averagePrice
     }
+    /*
+    preço médio de aquisição = (
+      se venda
+        pega o ultimo preco medio
+      se compra
+        (ultimo preco medio * ultima qtd em estoque + atual montante com corretagem) / atual estoque posição
+    )
+    */
   }
 }
