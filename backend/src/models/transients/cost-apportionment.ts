@@ -1,5 +1,5 @@
 export type CostApportionmentModel = {
-  orders: Array<CostApportionmentOrderModel>
+  orders: CostApportionmentOrderModel[]
   fees: number // soma das taxas = total sem irrf
   irrf: number
   feesWithIRRF: number // fees + irrf

@@ -3,7 +3,7 @@ import { prisma } from "../utils/constants/database-constants";
 
 export class OrderTypeService {
   
-  static async getOrderTypes(): Promise<Array<OrderTypeModel>> {
+  static async getOrderTypes(): Promise<OrderTypeModel[]> {
     const orderTypes = await prisma.orderType.findMany()
     return orderTypes
   }

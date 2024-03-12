@@ -26,7 +26,7 @@ export class CostApportionmentService {
     return costApportionment
   }
 
-  static async #setcostApportionmentOrders(costApportionment: CostApportionmentModel, orders: Array<OrderModel>) {
+  static async #setcostApportionmentOrders(costApportionment: CostApportionmentModel, orders: OrderModel[]) {
     for (const order of orders) {
       const quote = await QuoteService.getQuoteById(order.quoteId)
       const obj: CostApportionmentOrderModel = {
@@ -45,7 +45,7 @@ export class CostApportionmentService {
     }
   }
   
-  static async #getTotalPurchasesAndSales(orders: Array<OrderModel>) {
+  static async #getTotalPurchasesAndSales(orders: OrderModel[]) {
     let purchases = 0
     let sales = 0
     const orderTypes = await OrderTypeService.getOrderTypes()

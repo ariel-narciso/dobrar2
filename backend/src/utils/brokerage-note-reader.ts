@@ -19,7 +19,7 @@ export class BrokerageNoteReader {
   }
 
   getOrders() {
-    const orders: Array<OrderInterface> = []
+    const orders: OrderInterface[] = []
     for (const page of this.#pages) {
       orders.push(...this.#extractOrders(page))
     }
@@ -65,7 +65,7 @@ export class BrokerageNoteReader {
   }
 
   #extractOrders(pdfContent: string[]) {
-    const orders: Array<OrderInterface> = []
+    const orders: OrderInterface[] = []
     let first = pdfContent.indexOf("bovespa")
     let last = pdfContent.indexOf("bovespa", first + 1)
     while (last != -1) {

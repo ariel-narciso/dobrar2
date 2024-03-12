@@ -6,14 +6,14 @@ import { OrderTypeService } from "./order-type-service"
 
 export class OrderService {
 
-  static async getOrdersByNoteId(noteId: string): Promise<Array<OrderModel>> {
+  static async getOrdersByNoteId(noteId: string): Promise<OrderModel[]> {
     const orders = await prisma.order.findMany({
       where: { noteId }
     })
     return orders
   }
   
-  static async getOrdersWithTickerId(orders: Array<OrderInterface>, orderTypes?: Array<OrderTypeModel>) {
+  static async getOrdersWithTickerId(orders: OrderInterface[], orderTypes?: OrderTypeModel[]) {
   
     if (!orderTypes) {
       orderTypes = await OrderTypeService.getOrderTypes()
@@ -22,7 +22,7 @@ export class OrderService {
     const buyOrderId = orderTypes.find(type => type.code == PURCHASE_ORDER_TYPE_CODE)?.id || ""
     const sellOrderId = orderTypes.find(type => type.code == SALE_ORDER_TYPE_CODE)?.id || ""
   
-    const ans: Array<OrderModel> = []
+    const ans: OrderModel[] = []
     for (const order of orders) {
       const stock = await prisma.quote.findUnique({
         where: {

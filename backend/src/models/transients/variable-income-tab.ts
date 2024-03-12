@@ -17,6 +17,6 @@ export type QuantityPriceModel = {
   price: number
 }
 
-export type QuoteStock = {
+export type QuoteStockModel = {
   [key: string]: QuantityPriceModel
 }

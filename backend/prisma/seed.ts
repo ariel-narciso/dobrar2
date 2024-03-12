@@ -13,12 +13,12 @@ import { OrderService } from "../src/services/order-service";
 
 export class Seed {
 
-  quoteTypes: Array<QuoteTypeModel> = []
-  orderTypes: Array<OrderTypeModel> = []
+  quoteTypes: QuoteTypeModel[] = []
+  orderTypes: OrderTypeModel[] = []
 
   async #createQuoteTypes() {
 
-    const types: Array<QuoteTypeModel> = [
+    const types: QuoteTypeModel[] = [
       {code: 1, name: 'ETF'},
       {code: 2, name: 'Ação'},
       {code: 3, name: 'Fundo Imobiliário'}
@@ -33,7 +33,7 @@ export class Seed {
 
   async #createOrderTypes() {
 
-    const types: Array<QuoteTypeModel> = [
+    const types: QuoteTypeModel[] = [
       {code: 1, name: 'Compra'},
       {code: 2, name: 'Venda'},
     ]
@@ -45,7 +45,7 @@ export class Seed {
     }
   }
 
-  async #createQuotes(stocks: Array<StockInterface>, funds: Array<StockInterface>) {
+  async #createQuotes(stocks: StockInterface[], funds: StockInterface[]) {
 
     const etfTypeId = this.quoteTypes
       .find(type => type.code == ETF_QUOTE_TYPE_CODE)?.id as string
@@ -75,7 +75,7 @@ export class Seed {
     }
   }
 
-  async #createNotes(notes: Array<NoteInterface>) {
+  async #createNotes(notes: NoteInterface[]) {
     for (const note of notes) {
       await prisma.note.create({
         data: {
@@ -90,14 +90,14 @@ export class Seed {
     }
   }
 
-  async resetNotes(notes: Array<NoteInterface>) {
+  async resetNotes(notes: NoteInterface[]) {
     await this.#deleteNotes()
     await prisma.orderType.deleteMany()
     await this.#createOrderTypes()
     await this.#createNotes(notes)
   }
 
-  async resetDataBase(stocks: Array<StockInterface>, funds: Array<StockInterface>, notes: Array<NoteInterface>) {
+  async resetDataBase(stocks: StockInterface[], funds: StockInterface[], notes: NoteInterface[]) {
     await this.#deleteDataBase()
     await this.#createQuoteTypes()
     await this.#createQuotes(stocks, funds)

@@ -9,7 +9,7 @@ const renamedTickers: {[key: string]: string} = {
 }
 
 export async function getNotes() {
-  const notes: Array<NoteInterface> = []
+  const notes: NoteInterface[] = []
   for (const year of readdirSync('docs')) {
     for (const month of readdirSync(`docs/${year}`)) {
       await reader.readPDF(`docs/${year}/${month}`)

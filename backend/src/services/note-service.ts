@@ -4,7 +4,7 @@ import { prisma } from "../utils/constants/database-constants";
 
 export class NoteService {
 
-  static async addNote(note: NoteModel, orders: Array<OrderModel>) {
+  static async addNote(note: NoteModel, orders: OrderModel[]) {
     note = await prisma.note.create({
       data: {
         ...note,
@@ -23,7 +23,7 @@ export class NoteService {
     return note
   }
 
-  static async getNotes(sortType?: 'asc' | 'desc'): Promise<Array<NoteModel>> {
+  static async getNotes(sortType?: 'asc' | 'desc'): Promise<NoteModel[]> {
     return await prisma.note.findMany({
       orderBy: { date: sortType }
     })
