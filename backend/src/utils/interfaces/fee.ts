@@ -4,4 +4,5 @@ export interface FeeInterface {
   iss: number
   irrf: number
   irrfDayTrade?: number
+  brokerageFee?: number
 }

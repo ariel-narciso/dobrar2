@@ -56,6 +56,9 @@ export class VariableIncomeTabService {
     }
     else {
       obj.quantityStock = obj.quantity + this.#quoteStock[obj.ticker].quantity
+      if (obj.quantityStock < 0) {
+        throw new Error(`${JSON.stringify(obj)}`)
+      }
       if (obj.quantity > 0) {
         obj.averagePrice = (
           this.#quoteStock[obj.ticker].price * this.#quoteStock[obj.ticker].quantity + obj.totalWithFees
@@ -68,6 +71,9 @@ export class VariableIncomeTabService {
     this.#quoteStock[obj.ticker] = {
       quantity: obj.quantityStock,
       price: obj.averagePrice
+    }
+    if (this.#quoteStock[obj.ticker].quantity == 0) {
+      delete this.quoteStock[obj.ticker]
     }
     /*
     preço médio de aquisição = (

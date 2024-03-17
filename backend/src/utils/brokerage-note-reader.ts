@@ -6,54 +6,37 @@ export class BrokerageNoteReader {
   
   #pdfExtract = new PDFExtract()
   #data?: PDFExtractResult
-  #pages: string[][] = []
   #document: string[] = []
 
   async readPDF(filename: string) {
     this.#data = await this.#pdfExtract.extract(filename, {})
-    this.#pages = this.#data!.pages.map(page => page.content.map(c => c.str.toLowerCase()).filter(c => c.trim()))
-    this.#document = this.#pages.reduce((previous, next) => {
-      previous.push(...next)
+    const pages = this.#data!.pages.map(page => page.content.map(c => c.str.toLowerCase()).filter(c => c.trim()))
+    this.#document = pages.reduce((previous, current) => {
+      previous.push(...current)
       return previous
     })
   }
 
   getOrders() {
-    const orders: OrderInterface[] = []
-    for (const page of this.#pages) {
-      orders.push(...this.#extractOrders(page))
-    }
-    return orders
+    return this.#extractOrders(this.#document)
   }
 
-  getFees() {
-    const fee: FeeInterface = {} as FeeInterface
-    
-    let index = this.#document.indexOf('taxa de liquidação')
+  #getFee(searchKey: string) {
+    let index = this.#document.indexOf(searchKey)
     if (index == -1) {
-      throw new Error("Taxa de liquidação não encontrada")
+      throw new Error(`${searchKey} não encontrado(a)`)
     }
-    fee['settlementFee'] = -currencyBrToUs(this.#document[index + 1])
-    
-    index = this.#document.indexOf('emolumentos')
-    if (index == -1) {
-      throw new Error("Emolummentos não encontrado")
-    }
-    fee['emoluments'] = -currencyBrToUs(this.#document[index + 1])
-    
-    index = this.#document.indexOf('iss (são paulo)')
-    if (index == -1) {
-      throw new Error("iss não encontrado")
-    }
-    fee['iss'] = -currencyBrToUs(this.#document[index + 1])
+    return this.#document[index + 1]
+  }
 
-    index = this.#document.indexOf('i.r.r.f. s/ operações. base 0,00')
-    if (index == -1) {
-      throw new Error("irrf não encontrado")
+  getFees(): FeeInterface {
+    return {
+      settlementFee: -currencyBrToUs(this.#getFee('taxa de liquidação')),
+      emoluments: -currencyBrToUs(this.#getFee('emolumentos')),
+      iss: -currencyBrToUs(this.#getFee('iss (são paulo)')),
+      irrf: -currencyBrToUs(this.#getFee('i.r.r.f. s/ operações. base 0,00')),
+      brokerageFee: -currencyBrToUs(this.#getFee('corretagem')),
     }
-    fee['irrf'] = -currencyBrToUs(this.#document[index + 1])
-    
-    return fee
   }
 
   getDate() {
