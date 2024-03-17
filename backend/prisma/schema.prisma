@@ -15,13 +15,14 @@ datasource db {
 }
 
 model Quote {
-  id          String    @id @default(uuid())
-  quoteTypeId String    @map("quote_type_id")
-  ticker      String    @unique
+  id          String       @id @default(uuid())
+  quoteTypeId String       @map("quote_type_id")
+  ticker      String       @unique
   name        String
-  cnpj        String?   @unique
-  quoteType   QuoteType @relation(fields: [quoteTypeId], references: [id])
+  cnpj        String?      @unique
+  quoteType   QuoteType    @relation(fields: [quoteTypeId], references: [id])
   Order       Order[]
+  QuoteEvent  QuoteEvent[]
 
   @@map("quote")
 }
@@ -50,6 +51,19 @@ model Order {
   @@map("order")
 }
 
+model QuoteEvent {
+  id               String         @id @default(uuid())
+  quoteId          String         @map("quote_id")
+  quoteEventTypeId String         @map("quote_event_type_id")
+  date             DateTime
+  quantity         Int?
+  value            Float
+  quote            Quote          @relation(fields: [quoteId], references: [id])
+  quoteEventType   QuoteEventType @relation(fields: [quoteEventTypeId], references: [id])
+
+  @@map("quote_event")
+}
+
 model OrderType {
   id    String  @id @default(uuid())
   code  Int     @unique
@@ -66,4 +80,13 @@ model QuoteType {
   Quote Quote[]
 
   @@map("quote_type")
+}
+
+model QuoteEventType {
+  id         String       @id @default(uuid())
+  code       Int          @unique
+  name       String
+  QuoteEvent QuoteEvent[]
+
+  @@map("quote_event_type")
 }
