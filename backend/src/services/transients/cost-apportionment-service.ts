@@ -9,8 +9,8 @@ import { QuoteService } from "../quote-service";
 export class CostApportionmentService {
 
   static async get(noteId: string) {
-    const note = await NoteService.getNoteById(noteId)
-    const orders = await OrderService.getOrdersByNoteId(noteId)
+    const note = await NoteService.getById(noteId)
+    const orders = await OrderService.getByNoteId(noteId)
     const [purchases, sales] = await this.#getTotalPurchasesAndSales(orders)
     const costApportionment: CostApportionmentModel = {
       fees: note!.fees,
@@ -28,7 +28,7 @@ export class CostApportionmentService {
 
   static async #setcostApportionmentOrders(costApportionment: CostApportionmentModel, orders: OrderModel[]) {
     for (const order of orders) {
-      const quote = await QuoteService.getQuoteById(order.quoteId)
+      const quote = await QuoteService.getById(order.quoteId)
       const obj: CostApportionmentOrderModel = {
         ticker: quote!.ticker,
         quantity: order.quantity,
@@ -48,7 +48,7 @@ export class CostApportionmentService {
   static async #getTotalPurchasesAndSales(orders: OrderModel[]) {
     let purchases = 0
     let sales = 0
-    const orderTypes = await OrderTypeService.getOrderTypes()
+    const orderTypes = await OrderTypeService.get()
     for (const [idx, order] of orders.entries()) {
       const type = orderTypes.find(type => type.id == order.orderTypeId)
       if (type?.code == PURCHASE_ORDER_TYPE_CODE) {

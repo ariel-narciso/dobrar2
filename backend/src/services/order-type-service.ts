@@ -3,12 +3,12 @@ import { prisma } from "../utils/constants/database-constants";
 
 export class OrderTypeService {
   
-  static async getOrderTypes(): Promise<OrderTypeModel[]> {
+  static async get(): Promise<OrderTypeModel[]> {
     const orderTypes = await prisma.orderType.findMany()
     return orderTypes
   }
 
-  static async getOrderTypeById(id: string): Promise<OrderTypeModel | null> {
+  static async getById(id: string): Promise<OrderTypeModel | null> {
     const orderType = await prisma.orderType.findUnique({
       where: { id }
     })

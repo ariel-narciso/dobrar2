@@ -18,7 +18,7 @@ export class VariableIncomeTabService {
 
   async get() {
     this.#orders = []
-    const notes = await NoteService.getNotes('asc')
+    const notes = await NoteService.get('asc')
     for (const note of notes) {
       const apportionment = await CostApportionmentService.get(note.id!)
       const orders = apportionment.orders

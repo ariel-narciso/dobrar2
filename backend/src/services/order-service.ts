@@ -3,20 +3,21 @@ import { PURCHASE_ORDER_TYPE_CODE, SALE_ORDER_TYPE_CODE, prisma } from "../utils
 import { OrderInterface } from "../utils/interfaces/order"
 import { OrderTypeModel } from "../models/oder-type"
 import { OrderTypeService } from "./order-type-service"
+import { QuoteService } from "./quote-service"
 
 export class OrderService {
 
-  static async getOrdersByNoteId(noteId: string): Promise<OrderModel[]> {
+  static async getByNoteId(noteId: string): Promise<OrderModel[]> {
     const orders = await prisma.order.findMany({
       where: { noteId }
     })
     return orders
   }
   
-  static async getOrdersWithTickerId(orders: OrderInterface[], orderTypes?: OrderTypeModel[]) {
+  static async getOrderModels(orders: OrderInterface[], orderTypes?: OrderTypeModel[]) {
   
     if (!orderTypes) {
-      orderTypes = await OrderTypeService.getOrderTypes()
+      orderTypes = await OrderTypeService.get()
     }
     
     const buyOrderId = orderTypes.find(type => type.code == PURCHASE_ORDER_TYPE_CODE)?.id || ""
@@ -24,13 +25,9 @@ export class OrderService {
   
     const ans: OrderModel[] = []
     for (const order of orders) {
-      const stock = await prisma.quote.findUnique({
-        where: {
-          ticker: order.ticket
-        }
-      })
+      const stock = await QuoteService.getByTicker(order.ticket)
       ans.push({
-        quoteId: stock!.id,
+        quoteId: stock!.id!,
         orderTypeId: order.type == 'c' ? buyOrderId : sellOrderId,
         quantity: order.quantity,
         price: order.price

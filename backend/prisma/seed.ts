@@ -109,7 +109,7 @@ export class Seed {
           fees: note.fees,
           irrf: note.irrf,
           Order: {
-            create: await OrderService.getOrdersWithTickerId(note.orders, this.orderTypes)
+            create: await OrderService.getOrderModels(note.orders, this.orderTypes)
           }
         }
       })
@@ -126,7 +126,7 @@ export class Seed {
     const quoteTickers = ['slce3', 'cpts11', 'kepl3']
     const quoteids: string[] = []
     for (const ticker of quoteTickers) {
-      const quote = await QuoteService.getQuoteByTicker(ticker)  
+      const quote = await QuoteService.getByTicker(ticker)  
       quoteids.push(quote?.id!)
     }
 

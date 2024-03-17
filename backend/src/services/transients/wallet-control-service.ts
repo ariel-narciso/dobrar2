@@ -44,7 +44,7 @@ export class WalletControlService {
   }
 
   async #initAssets(ticker: string, stock: QuantityPriceModel, currentPrice: number) {
-    const quote = await QuoteService.getQuoteByTicker(ticker)
+    const quote = await QuoteService.getByTicker(ticker)
     const quoteType = await QuoteTypeService.getById(quote!.quoteTypeId)
     const obj: AssetModel = {
       quote: quote!,
